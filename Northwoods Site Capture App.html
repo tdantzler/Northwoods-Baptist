@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Northwoods Security — Site Capture</title>
+<style>
+:root{--navy:#1F4E78;--blue:#2E75B6;--lt:#D9E1F2;--ok:#2e7d32;--amber:#c77700;--bg:#f4f6f9;--card:#fff;--line:#dfe4ea;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:#1a1a1a;padding-bottom:80px;}
+header{position:sticky;top:0;z-index:10;background:var(--navy);color:#fff;padding:12px 14px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 6px rgba(0,0,0,.15);}
+header h1{font-size:16px;margin:0;flex:1;line-height:1.2;}
+header .prog{font-size:12px;opacity:.9;white-space:nowrap;}
+button{font-family:inherit;cursor:pointer;border:none;border-radius:10px;font-size:15px;}
+.back{background:rgba(255,255,255,.2);color:#fff;padding:8px 12px;font-weight:600;}
+.wrap{padding:12px;max-width:760px;margin:0 auto;}
+.meta{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;margin-bottom:12px;}
+.meta label{display:block;font-size:12px;font-weight:700;color:#555;margin:6px 0 3px;}
+.meta input{width:100%;padding:9px;border:1px solid var(--line);border-radius:8px;font-size:15px;}
+.bldg,.loc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:12px;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+.bldg:active,.loc:active{background:#eef2f8;}
+.bldg .t,.loc .t{flex:1;min-width:0;}
+.bldg .t b{font-size:16px;} .loc .t b{font-size:15px;}
+.sub{font-size:12px;color:#667;margin-top:2px;overflow:hidden;text-overflow:ellipsis;}
+.badge{font-size:12px;font-weight:700;padding:4px 9px;border-radius:20px;white-space:nowrap;}
+.b-done{background:#e3f4e4;color:var(--ok);} .b-part{background:#fff3e0;color:var(--amber);} .b-none{background:#eceff3;color:#889;}
+.chev{color:#bbc;font-size:22px;}
+.kind{display:inline-block;font-size:11px;font-weight:700;padding:2px 7px;border-radius:6px;background:var(--lt);color:var(--navy);margin-right:6px;}
+.detail label{display:block;font-size:12px;font-weight:700;color:#555;margin:12px 0 4px;}
+.detail input,.detail textarea,.detail select{width:100%;padding:11px;border:1px solid var(--line);border-radius:9px;font-size:16px;}
+.detail textarea{min-height:70px;resize:vertical;}
+.seg{display:flex;gap:8px;} .seg button{flex:1;padding:11px;border:1px solid var(--line);background:#fff;border-radius:9px;font-weight:600;color:#556;}
+.seg button.on{background:var(--blue);color:#fff;border-color:var(--blue);}
+.photobtn{width:100%;padding:16px;background:var(--blue);color:#fff;font-weight:700;font-size:16px;margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px;}
+.photos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}
+.photos .ph{position:relative;aspect-ratio:1;border-radius:9px;overflow:hidden;border:1px solid var(--line);}
+.photos img{width:100%;height:100%;object-fit:cover;}
+.photos .del{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.6);color:#fff;border-radius:50%;width:24px;height:24px;font-size:14px;line-height:24px;text-align:center;}
+.savebar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 12px;display:flex;gap:10px;max-width:760px;margin:0 auto;}
+.savebar button{flex:1;padding:14px;font-weight:700;font-size:16px;}
+.save{background:var(--ok);color:#fff;} .done-toggle{background:#eceff3;color:#334;}
+.done-toggle.on{background:var(--ok);color:#fff;}
+.fab{position:fixed;right:16px;bottom:16px;z-index:20;}
+.exp{background:var(--navy);color:#fff;padding:14px 18px;border-radius:30px;font-weight:700;box-shadow:0 3px 10px rgba(0,0,0,.25);}
+.hint{font-size:12px;color:#778;margin:2px 2px 12px;}
+dialog{border:none;border-radius:14px;padding:0;max-width:92%;width:420px;}
+dialog .d{padding:18px;} dialog h3{margin:0 0 8px;} dialog button{width:100%;padding:13px;margin-top:8px;font-weight:700;}
+.progbar{height:6px;background:#eceff3;border-radius:4px;overflow:hidden;margin-top:8px;}
+.progbar>i{display:block;height:100%;background:var(--ok);width:0;transition:width .3s;}
+.filter{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px;}
+.filter button{padding:7px 12px;border:1px solid var(--line);background:#fff;border-radius:20px;font-size:13px;font-weight:600;color:#556;white-space:nowrap;}
+.filter button.on{background:var(--navy);color:#fff;border-color:var(--navy);}
+</style>
+</head>
+<body>
+<header>
+  <button class="back" id="back" style="display:none">‹ Back</button>
+  <h1 id="title">Northwoods — Site Capture</h1>
+  <span class="prog" id="hprog"></span>
+</header>
+<div class="wrap" id="app"></div>
+<div class="fab" id="fab"><button class="exp" id="expBtn">⬇ Export</button></div>
+
+<dialog id="expDlg"><div class="d">
+  <h3>Export site data</h3>
+  <p class="hint">Saves to your phone's Downloads. Email it to yourself or drop in your shared folder.</p>
+  <button class="exp" id="expHtml">📄 Photo Report (HTML, with images)</button>
+  <button class="done-toggle" id="expCsv">📊 Notes only (CSV)</button>
+  <button class="done-toggle" id="expJson">💾 Backup / transfer (JSON)</button>
+  <button style="background:#eee" id="expClose">Close</button>
+</div></dialog>
+
+<input type="file" id="cam" accept="image/*" capture="environment" style="display:none">
+
+<script>
+const LOCS = [{"id": "CAM01", "building": "Education Addition North", "tag": "CAM 01", "kind": "Camera", "planned": "UVC-AI-MS-4 — 32MP Quad Multisensor"}, {"id": "CAM02", "building": "Education Addition North", "tag": "CAM 02", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM03", "building": "Education Addition North", "tag": "CAM 03", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM04", "building": "Education Addition North", "tag": "CAM 04", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM05", "building": "Education Addition North", "tag": "CAM 05", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "CAM06", "building": "Education Addition North", "tag": "CAM 06", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM07", "building": "Education Addition North", "tag": "CAM 07", "kind": "Camera", "planned": "2-Sensor — 8MP Dual-Head"}, {"id": "CAM08", "building": "Education Addition North", "tag": "CAM 08", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM09", "building": "Education Addition North", "tag": "CAM 09", "kind": "Camera", "planned": "2-Sensor — 8MP Dual-Head"}, {"id": "CAM10", "building": "Education Addition North", "tag": "CAM 10", "kind": "Camera", "planned": "2-Sensor — 8MP Dual-Head"}, {"id": "CAM11", "building": "Education Addition North", "tag": "CAM 11", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "CAM12", "building": "Education Addition North", "tag": "CAM 12", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM13", "building": "Education Addition North", "tag": "CAM 13", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "DC01", "building": "Education Addition North", "tag": "DC-01", "kind": "Door Contact", "planned": "DPDT contact (recessed)"}, {"id": "DC02", "building": "Education Addition North", "tag": "DC-02", "kind": "Door Contact", "planned": "DPDT contact (recessed)"}, {"id": "LA_01", "building": "Education Addition North", "tag": "LA-01", "kind": "Detex Alarm", "planned": "Door-prop alarm (EAX-300W)"}, {"id": "LA_02", "building": "Education Addition North", "tag": "LA-02", "kind": "Detex Alarm", "planned": "Door-prop alarm (EAX-300W)"}, {"id": "MD01", "building": "Education Addition North", "tag": "MD-01", "kind": "Motion", "planned": "Intrusion motion detector"}, {"id": "MD02", "building": "Education Addition North", "tag": "MD-02", "kind": "Motion", "planned": "Intrusion motion detector"}, {"id": "MD03", "building": "Education Addition North", "tag": "MD-03", "kind": "Motion", "planned": "Intrusion motion detector"}, {"id": "CAM14", "building": "Education Addition South", "tag": "CAM 14", "kind": "Camera", "planned": "UVC-AI-MS-4 — 32MP Quad Multisensor"}, {"id": "CAM15", "building": "Education Addition South", "tag": "CAM 15", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM16", "building": "Education Addition South", "tag": "CAM 16", "kind": "Camera", "planned": "UVC-AI-MS-4 — 32MP Quad Multisensor"}, {"id": "CAM17", "building": "Education Addition South", "tag": "CAM 17", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM18", "building": "Education Addition South", "tag": "CAM 18", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM19", "building": "Education Addition South", "tag": "CAM 19", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM20", "building": "Education Addition South", "tag": "CAM 20", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM21", "building": "Education Addition South", "tag": "CAM 21", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM22", "building": "Education Addition South", "tag": "CAM 22", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "CAM23", "building": "Education Addition South", "tag": "CAM 23", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM24", "building": "Education Addition South", "tag": "CAM 24", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM25", "building": "Education Addition South", "tag": "CAM 25", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM26", "building": "Education Addition South", "tag": "CAM 26", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "CAM27", "building": "Education Addition South", "tag": "CAM 27", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "CAM28", "building": "Education Addition South", "tag": "CAM 28", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM29", "building": "Education Addition South", "tag": "CAM 29", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM30", "building": "Education Addition South", "tag": "CAM 30", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM31", "building": "Education Addition South", "tag": "CAM 31", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM60", "building": "Education Addition South", "tag": "CAM 60", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "DC03", "building": "Education Addition South", "tag": "DC-03", "kind": "Door Contact", "planned": "DPDT contact (recessed)"}, {"id": "DR_CR02", "building": "Education Addition South", "tag": "CR-02", "kind": "Access Door", "planned": "Card reader (ACP-1)"}, {"id": "DR_CR03", "building": "Education Addition South", "tag": "CR-03", "kind": "Access Door", "planned": "Card reader (ACP-1)"}, {"id": "DR_CR07", "building": "Education Addition South", "tag": "CR-07", "kind": "Access Door", "planned": "Card reader (ACP-1)"}, {"id": "KP01", "building": "Education Addition South", "tag": "KP-01", "kind": "Keypad", "planned": "Intrusion keypad"}, {"id": "LA_03", "building": "Education Addition South", "tag": "LA-03", "kind": "Detex Alarm", "planned": "Door-prop alarm (EAX-300W)"}, {"id": "MD05", "building": "Education Addition South", "tag": "MD-05", "kind": "Motion", "planned": "Intrusion motion detector"}, {"id": "CAM32", "building": "Multipurpose West", "tag": "CAM 32", "kind": "Camera", "planned": "UVC-AI-TURRET — AI Turret"}, {"id": "CAM35", "building": "Multipurpose West", "tag": "CAM 35", "kind": "Camera", "planned": "UVC-AI-MS-4 — 32MP Quad Multisensor"}, {"id": "CAM36", "building": "Multipurpose West", "tag": "CAM 36", "kind": "Camera", "planned": "2-Sensor — 8MP Dual-Head"}, {"id": "CAM38", "building": "Multipurpose West", "tag": "CAM 38", "kind": "Camera", "planned": "UVC-AI-MS-4 — 32MP Quad Multisensor"}, {"id": "CAM39", "building": "Multipurpose West", "tag": "CAM 39", "kind": "Camera", "planned": "UVC-AI-TURRET — AI Turret"}, {"id": "CAM40", "building": "Multipurpose West", "tag": "CAM 40", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM41", "building": "Multipurpose West", "tag": "CAM 41", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM42", "building": "Multipurpose West", "tag": "CAM 42", "kind": "Camera", "planned": "2-Sensor — 8MP Dual-Head"}, {"id": "CAM43", "building": "Multipurpose West", "tag": "CAM 43", "kind": "Camera", "planned": "2-Sensor — 8MP Dual-Head"}, {"id": "CAM61", "building": "Multipurpose West", "tag": "CAM 61", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "CAM93", "building": "Multipurpose West", "tag": "CAM 93", "kind": "Camera", "planned": "UVC-AI-MS-4 — 32MP Quad Multisensor"}, {"id": "DC04", "building": "Multipurpose West", "tag": "DC-04", "kind": "Door Contact", "planned": "DPDT contact (recessed)"}, {"id": "DR_120A", "building": "Multipurpose West", "tag": "120A", "kind": "Access Door", "planned": "Card reader (ACP-2)"}, {"id": "DR_120D", "building": "Multipurpose West", "tag": "120D", "kind": "Access Door", "planned": "Card reader (ACP-2)"}, {"id": "KP02", "building": "Multipurpose West", "tag": "KP-02", "kind": "Keypad", "planned": "Intrusion keypad"}, {"id": "LA_04", "building": "Multipurpose West", "tag": "LA-04", "kind": "Detex Alarm", "planned": "Door-prop alarm (EAX-300W)"}, {"id": "MD06", "building": "Multipurpose West", "tag": "MD-06", "kind": "Motion", "planned": "Intrusion motion detector"}, {"id": "MD07", "building": "Multipurpose West", "tag": "MD-07", "kind": "Motion", "planned": "Intrusion motion detector"}, {"id": "MD08", "building": "Multipurpose West", "tag": "MD-08", "kind": "Motion", "planned": "Intrusion motion detector"}, {"id": "CAM44", "building": "Multipurpose East", "tag": "CAM 44", "kind": "Camera", "planned": "UVC-AI-TURRET — AI Turret"}, {"id": "CAM45", "building": "Multipurpose East", "tag": "CAM 45", "kind": "Camera", "planned": "UVC-AI-MS-4 — 32MP Quad Multisensor"}, {"id": "CAM46", "building": "Multipurpose East", "tag": "CAM 46", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM47", "building": "Multipurpose East", "tag": "CAM 47", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM48", "building": "Multipurpose East", "tag": "CAM 48", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "CAM49", "building": "Multipurpose East", "tag": "CAM 49", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM50", "building": "Multipurpose East", "tag": "CAM 50", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM51", "building": "Multipurpose East", "tag": "CAM 51", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM52", "building": "Multipurpose East", "tag": "CAM 52", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM53", "building": "Multipurpose East", "tag": "CAM 53", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM54", "building": "Multipurpose East", "tag": "CAM 54", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM55", "building": "Multipurpose East", "tag": "CAM 55", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM56", "building": "Multipurpose East", "tag": "CAM 56", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "CAM57", "building": "Multipurpose East", "tag": "CAM 57", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "CAM58", "building": "Multipurpose East", "tag": "CAM 58", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "CAM59", "building": "Multipurpose East", "tag": "CAM 59", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "CAM91", "building": "Multipurpose East", "tag": "CAM 91", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "DC05", "building": "Multipurpose East", "tag": "DC-05", "kind": "Door Contact", "planned": "DPDT contact (recessed)"}, {"id": "DC06", "building": "Multipurpose East", "tag": "DC-06", "kind": "Door Contact", "planned": "DPDT contact (recessed)"}, {"id": "DC07", "building": "Multipurpose East", "tag": "DC-07", "kind": "Door Contact", "planned": "DPDT contact (recessed)"}, {"id": "DC12", "building": "Multipurpose East", "tag": "DC-12", "kind": "Door Contact", "planned": "DPDT contact (recessed)"}, {"id": "DC13", "building": "Multipurpose East", "tag": "DC-13", "kind": "Door Contact", "planned": "DPDT contact (recessed)"}, {"id": "DC14", "building": "Multipurpose East", "tag": "DC-14", "kind": "Door Contact", "planned": "DPDT contact (recessed)"}, {"id": "DR_CR06_VI01", "building": "Multipurpose East", "tag": "CR-06/VI-01", "kind": "Access Door", "planned": "Reader + Intercom"}, {"id": "DR_DR01", "building": "Multipurpose East", "tag": "DR-01", "kind": "Access Door", "planned": "Card reader (ACP-3)"}, {"id": "KP03", "building": "Multipurpose East", "tag": "KP-03", "kind": "Keypad", "planned": "Intrusion keypad"}, {"id": "LA_05", "building": "Multipurpose East", "tag": "LA-05", "kind": "Detex Alarm", "planned": "Door-prop alarm (EAX-300W)"}, {"id": "LA_06", "building": "Multipurpose East", "tag": "LA-06", "kind": "Detex Alarm", "planned": "Door-prop alarm (EAX-300W)"}, {"id": "LA_06_07", "building": "Multipurpose East", "tag": "LA-06/07", "kind": "Detex Alarm", "planned": "Door-prop alarm (EAX-300W)"}, {"id": "MD09", "building": "Multipurpose East", "tag": "MD-09", "kind": "Motion", "planned": "Intrusion motion detector"}, {"id": "CAM33", "building": "Worship", "tag": "CAM 33", "kind": "Camera", "planned": "UVC-AI-MS-4 — 32MP Quad Multisensor"}, {"id": "CAM34", "building": "Worship", "tag": "CAM 34", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "CAM62", "building": "Worship", "tag": "CAM 62", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "CAM63", "building": "Worship", "tag": "CAM 63", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM64", "building": "Worship", "tag": "CAM 64", "kind": "Camera", "planned": "2-Sensor — 8MP Dual-Head"}, {"id": "CAM65", "building": "Worship", "tag": "CAM 65", "kind": "Camera", "planned": "2-Sensor — 8MP Dual-Head"}, {"id": "CAM66", "building": "Worship", "tag": "CAM 66", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "CAM67", "building": "Worship", "tag": "CAM 67", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM68", "building": "Worship", "tag": "CAM 68", "kind": "Camera", "planned": "2-Sensor — 8MP Dual-Head"}, {"id": "CAM69", "building": "Worship", "tag": "CAM 69", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "CAM70", "building": "Worship", "tag": "CAM 70", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM71", "building": "Worship", "tag": "CAM 71", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "CAM72", "building": "Worship", "tag": "CAM 72", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "CAM73", "building": "Worship", "tag": "CAM 73", "kind": "Camera", "planned": "2-Sensor — 8MP Dual-Head"}, {"id": "CAM74", "building": "Worship", "tag": "CAM 74", "kind": "Camera", "planned": "2-Sensor — 8MP Dual-Head"}, {"id": "CAM75", "building": "Worship", "tag": "CAM 75", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "DC18", "building": "Worship", "tag": "DC-18", "kind": "Door Contact", "planned": "DPDT contact (recessed)"}, {"id": "DR_CR12", "building": "Worship", "tag": "CR-12", "kind": "Access Door", "planned": "Card reader (ACP-1)"}, {"id": "DR_CR13_VI02", "building": "Worship", "tag": "CR-13/VI-02", "kind": "Access Door", "planned": "Reader + Intercom"}, {"id": "DR_CR14", "building": "Worship", "tag": "CR-14", "kind": "Access Door", "planned": "Card reader (ACP-1)"}, {"id": "KP04", "building": "Worship", "tag": "KP-04", "kind": "Keypad", "planned": "Intrusion keypad"}, {"id": "MD10", "building": "Worship", "tag": "MD-10", "kind": "Motion", "planned": "Intrusion motion detector"}, {"id": "CAM76", "building": "Chapel", "tag": "CAM 76", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "CAM77", "building": "Chapel", "tag": "CAM 77", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "CAM78", "building": "Chapel", "tag": "CAM 78", "kind": "Camera", "planned": "UVC-G6-PRO-TURRET — 8MP Turret"}, {"id": "CAM79", "building": "Chapel", "tag": "CAM 79", "kind": "Camera", "planned": "2-Sensor — 8MP Dual-Head"}, {"id": "CAM80", "building": "Chapel", "tag": "CAM 80", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "CAM81", "building": "Chapel", "tag": "CAM 81", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "CAM82", "building": "Chapel", "tag": "CAM 82", "kind": "Camera", "planned": "UVC-G6-PRO-TURRET — 8MP Turret"}, {"id": "CAM83", "building": "Chapel", "tag": "CAM 83", "kind": "Camera", "planned": "2-Sensor — 8MP Dual-Head"}, {"id": "CAM84", "building": "Chapel", "tag": "CAM 84", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "CAM85", "building": "Chapel", "tag": "CAM 85", "kind": "Camera", "planned": "UVC-G6-AI-DOME — 8MP Dome"}, {"id": "CAM86", "building": "Chapel", "tag": "CAM 86", "kind": "Camera", "planned": "2-Sensor — 8MP Dual-Head"}, {"id": "CAM87", "building": "Chapel", "tag": "CAM 87", "kind": "Camera", "planned": "2-Sensor — 8MP Dual-Head"}, {"id": "CAM88", "building": "Chapel", "tag": "CAM 88", "kind": "Camera", "planned": "2-Sensor — 8MP Dual-Head"}, {"id": "CAM89", "building": "Chapel", "tag": "CAM 89", "kind": "Camera", "planned": "UVC-G6-PRO-TURRET — 8MP Turret"}, {"id": "CAM90", "building": "Chapel", "tag": "CAM 90", "kind": "Camera", "planned": "UVC-G6-AI-360 — 4MP 360° Fisheye"}, {"id": "DC08", "building": "Chapel", "tag": "DC-08", "kind": "Door Contact", "planned": "DPDT contact (recessed)"}, {"id": "DC09", "building": "Chapel", "tag": "DC-09", "kind": "Door Contact", "planned": "DPDT contact (recessed)"}, {"id": "DC10", "building": "Chapel", "tag": "DC-10", "kind": "Door Contact", "planned": "DPDT contact (recessed)"}, {"id": "DC11", "building": "Chapel", "tag": "DC-11", "kind": "Door Contact", "planned": "DPDT contact (recessed)"}, {"id": "DR_CR15", "building": "Chapel", "tag": "CR-15", "kind": "Access Door", "planned": "Card reader (ACP-3)"}, {"id": "DR_CR16", "building": "Chapel", "tag": "CR-16", "kind": "Access Door", "planned": "Card reader (ACP-3)"}, {"id": "DR_CR17", "building": "Chapel", "tag": "CR-17", "kind": "Access Door", "planned": "Card reader (ACP-3)"}, {"id": "DR_CR18_VI04", "building": "Chapel", "tag": "CR-18/VI-04", "kind": "Access Door", "planned": "Reader + Intercom"}, {"id": "DR_CR19_VI03", "building": "Chapel", "tag": "CR-19/VI-03", "kind": "Access Door", "planned": "Reader + Intercom"}, {"id": "KP05", "building": "Chapel", "tag": "KP-05", "kind": "Keypad", "planned": "Intrusion keypad"}, {"id": "KP06", "building": "Chapel", "tag": "KP-06", "kind": "Keypad", "planned": "Intrusion keypad"}, {"id": "MD11", "building": "Chapel", "tag": "MD-11", "kind": "Motion", "planned": "Intrusion motion detector"}, {"id": "MD12", "building": "Chapel", "tag": "MD-12", "kind": "Motion", "planned": "Intrusion motion detector"}, {"id": "MD13", "building": "Chapel", "tag": "MD-13", "kind": "Motion", "planned": "Intrusion motion detector"}, {"id": "CAM37", "building": "Shed", "tag": "CAM 37", "kind": "Camera", "planned": "UVC-AI-MS-4 — 32MP Quad Multisensor"}, {"id": "CAM92", "building": "Shed", "tag": "CAM 92", "kind": "Camera", "planned": "UVC-AI-MS-4 — 32MP Quad Multisensor"}, {"id": "DC15", "building": "Shed", "tag": "DC-15", "kind": "Door Contact", "planned": "DPDT contact (TRACK overhead)"}, {"id": "DC16", "building": "Shed", "tag": "DC-16", "kind": "Door Contact", "planned": "DPDT contact (TRACK overhead)"}, {"id": "DC17", "building": "Shed", "tag": "DC-17", "kind": "Door Contact", "planned": "DPDT contact (TRACK overhead)"}, {"id": "DR_CR20", "building": "Shed", "tag": "CR-20", "kind": "Access Door", "planned": "Card reader (SW-7)"}];
+const ORDER=['Education Addition North','Education Addition South','Multipurpose West','Multipurpose East','Worship','Chapel','Shed'];
+const KINDS=['All','Camera','Access Door','Motion','Keypad','Door Contact','Detex Alarm'];
+let fields = JSON.parse(localStorage.getItem('nwbc_fields')||'{}');
+let meta = JSON.parse(localStorage.getItem('nwbc_meta')||'{}');
+let view={screen:'home',building:null,filter:'All'};
+let curId=null;
+
+// ---- IndexedDB for photos ----
+let db;
+const idb=indexedDB.open('nwbc_photos',1);
+idb.onupgradeneeded=e=>{e.target.result.createObjectStore('p');};
+idb.onsuccess=e=>{db=e.target.result; render();};
+function getPhotos(id){return new Promise(r=>{if(!db)return r([]);const t=db.transaction('p').objectStore('p').get(id);t.onsuccess=()=>r(t.result||[]);t.onerror=()=>r([]);});}
+function setPhotos(id,arr){return new Promise(r=>{const t=db.transaction('p','readwrite').objectStore('p').put(arr,id);t.onsuccess=()=>r();});}
+function allPhotos(){return new Promise(r=>{const out={};const t=db.transaction('p').objectStore('p').openCursor();t.onsuccess=e=>{const c=e.target.result;if(c){out[c.key]=c.value;c.continue();}else r(out);};});}
+
+function saveFields(){localStorage.setItem('nwbc_fields',JSON.stringify(fields));}
+function saveMeta(){localStorage.setItem('nwbc_meta',JSON.stringify(meta));}
+function statusOf(id){const f=fields[id]||{};const hasPhoto=(photoCount[id]||0)>0;if(f.done)return'done';if(hasPhoto||f.count||f.mount||f.material||f.height||f.notes)return'part';return'none';}
+let photoCount={};
+async function refreshPhotoCounts(){const all=await allPhotos();photoCount={};for(const k in all)photoCount[k]=all[k].length;}
+
+const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function bldgStats(b){const items=LOCS.filter(l=>l.building===b);let d=0;items.forEach(l=>{if(statusOf(l.id)==='done')d++;});return{done:d,total:items.length};}
+function totalStats(){let d=0;LOCS.forEach(l=>{if(statusOf(l.id)==='done')d++;});return{done:d,total:LOCS.length};}
+
+async function render(){
+  await refreshPhotoCounts();
+  const app=document.getElementById('app');
+  const back=document.getElementById('back');
+  const title=document.getElementById('title');
+  const ts=totalStats();
+  document.getElementById('hprog').textContent=ts.done+'/'+ts.total;
+  if(view.screen==='home'){
+    back.style.display='none'; title.textContent='Northwoods — Site Capture';
+    let h=`<div class="meta">
+      <label>Site / Project</label><input id="m_site" value="${esc(meta.site||'Northwoods Baptist Church — 2026 Security Upgrades')}">
+      <label>Technician</label><input id="m_tech" value="${esc(meta.tech||'')}" placeholder="Your name">
+      <label>Date</label><input id="m_date" type="date" value="${esc(meta.date||new Date().toISOString().slice(0,10))}">
+      <div class="progbar"><i style="width:${ts.total?ts.done/ts.total*100:0}%"></i></div>
+      <div class="hint">${ts.done} of ${ts.total} locations marked done</div>
+    </div>`;
+    ORDER.forEach(b=>{const s=bldgStats(b);const cls=s.done===s.total?'b-done':s.done>0?'b-part':'b-none';
+      h+=`<div class="bldg" onclick="openBldg('${b}')"><div class="t"><b>${b}</b><div class="sub">${s.total} devices</div></div><span class="badge ${cls}">${s.done}/${s.total}</span><span class="chev">›</span></div>`;});
+    app.innerHTML=h;
+    ['site','tech','date'].forEach(k=>{const el=document.getElementById('m_'+k);el.oninput=()=>{meta[k]=el.value;saveMeta();};});
+  }
+  else if(view.screen==='bldg'){
+    back.style.display='block'; back.onclick=()=>{view.screen='home';render();};
+    title.textContent=view.building;
+    let h='<div class="filter">'+KINDS.map(k=>`<button class="${view.filter===k?'on':''}" onclick="setFilter('${k}')">${k}</button>`).join('')+'</div>';
+    let items=LOCS.filter(l=>l.building===view.building);
+    if(view.filter!=='All')items=items.filter(l=>l.kind===view.filter);
+    items.forEach(l=>{const st=statusOf(l.id);const cls=st==='done'?'b-done':st==='part'?'b-part':'b-none';const lbl=st==='done'?'✓ done':st==='part'?'…':'—';const pc=photoCount[l.id]||0;
+      h+=`<div class="loc" onclick="openLoc('${l.id}')"><div class="t"><b><span class="kind">${l.kind}</span>${l.tag}</b><div class="sub">${esc(l.planned)}${pc?' · 📷'+pc:''}</div></div><span class="badge ${cls}">${lbl}</span><span class="chev">›</span></div>`;});
+    app.innerHTML=h;
+  }
+  else if(view.screen==='loc'){
+    const l=LOCS.find(x=>x.id===curId);const f=fields[curId]||{};
+    back.style.display='block'; back.onclick=()=>{view.screen='bldg';render();};
+    title.textContent=l.tag;
+    const photos=await getPhotos(curId);
+    const seg=(name,val,opts)=>`<div class="seg">`+opts.map(o=>`<button class="${f[name]===o?'on':''}" onclick="setSeg('${name}','${o}')">${o}</button>`).join('')+`</div>`;
+    app.innerHTML=`<div class="loc detail" style="display:block">
+      <div><span class="kind">${l.kind}</span><b style="font-size:18px">${l.tag}</b><div class="sub" style="margin-top:4px">${l.building} · ${esc(l.planned)}</div></div>
+      <button class="photobtn" onclick="takePhoto()">📷 Take / Add Photo</button>
+      <div class="photos" id="phGrid">${photos.map((p,i)=>`<div class="ph"><img src="${p}"><div class="del" onclick="delPhoto(${i})">✕</div></div>`).join('')}</div>
+      <label>Actual count at this location</label><input id="f_count" value="${esc(f.count||'')}" placeholder="e.g. 1">
+      <label>Mount</label>${seg('mount',f.mount,['Ceiling','Wall','Soffit/Ext'])}
+      <label>Wall / ceiling material</label><input id="f_material" value="${esc(f.material||'')}" placeholder="drywall, block, brick, T-bar, hard-lid…">
+      <label>Mount height (AFF)</label><input id="f_height" value="${esc(f.height||'')}" placeholder="e.g. 12 ft">
+      <label>Field notes</label><textarea id="f_notes" placeholder="pathway, obstructions, existing device, power, etc.">${esc(f.notes||'')}</textarea>
+    </div>
+    <div class="savebar">
+      <button class="done-toggle ${f.done?'on':''}" id="doneBtn">${f.done?'✓ Done':'Mark done'}</button>
+      <button class="save" id="saveBtn">Save</button>
+    </div>`;
+    document.getElementById('saveBtn').onclick=()=>{saveLoc();view.screen='bldg';render();};
+    document.getElementById('doneBtn').onclick=()=>{saveLoc();fields[curId].done=!fields[curId].done;saveFields();render();};
+  }
+}
+function openBldg(b){view.building=b;view.screen='bldg';view.filter='All';render();}
+function setFilter(k){view.filter=k;render();}
+function openLoc(id){curId=id;view.screen='loc';render();}
+function setSeg(name,val){fields[curId]=fields[curId]||{};fields[curId][name]=val;saveFields();render();}
+function saveLoc(){fields[curId]=fields[curId]||{};['count','material','height','notes'].forEach(k=>{const el=document.getElementById('f_'+k);if(el)fields[curId][k]=el.value;});saveFields();}
+
+// ---- photo capture with compression ----
+function takePhoto(){document.getElementById('cam').click();}
+document.getElementById('cam').onchange=async e=>{
+  const file=e.target.files[0]; e.target.value='';
+  if(!file)return;
+  const url=await compress(file);
+  const arr=await getPhotos(curId); arr.push(url); await setPhotos(curId,arr);
+  saveLoc(); render();
+};
+function compress(file){return new Promise(res=>{const img=new Image();const rd=new FileReader();
+  rd.onload=()=>{img.onload=()=>{const max=1400;let{width:w,height:h}=img;if(w>h&&w>max){h=h*max/w;w=max;}else if(h>max){w=w*max/h;h=max;}
+    const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res(c.toDataURL('image/jpeg',0.72));};img.src=rd.result;};
+  rd.readAsDataURL(file);});}
+async function delPhoto(i){const arr=await getPhotos(curId);arr.splice(i,1);await setPhotos(curId,arr);render();}
+
+// ---- export ----
+document.getElementById('expBtn').onclick=()=>document.getElementById('expDlg').showModal();
+document.getElementById('expClose').onclick=()=>document.getElementById('expDlg').close();
+function dl(name,blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();}
+const stamp=()=>new Date().toISOString().slice(0,10);
+document.getElementById('expCsv').onclick=()=>{
+  let rows=[['Building','Tag','Kind','Planned','Actual Count','Mount','Material','Mount Ht','Done','Notes']];
+  LOCS.forEach(l=>{const f=fields[l.id]||{};rows.push([l.building,l.tag,l.kind,l.planned,f.count||'',f.mount||'',f.material||'',f.height||'',f.done?'Y':'',f.notes||'']);});
+  const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  dl('Northwoods_site_notes_'+stamp()+'.csv',new Blob([csv],{type:'text/csv'}));
+};
+document.getElementById('expJson').onclick=async()=>{
+  const ph=await allPhotos();
+  dl('Northwoods_backup_'+stamp()+'.json',new Blob([JSON.stringify({meta,fields,photos:ph})],{type:'application/json'}));
+};
+document.getElementById('expHtml').onclick=async()=>{
+  const ph=await allPhotos();
+  let h=`<!doctype html><meta charset=utf-8><title>Northwoods Site Report</title><style>body{font-family:Arial;margin:24px;color:#222}h1{color:#1F4E78}h2{color:#1F4E78;border-bottom:2px solid #1F4E78;margin-top:28px}.loc{border:1px solid #ccc;border-radius:8px;padding:12px;margin:10px 0;page-break-inside:avoid}.tag{font-size:17px;font-weight:bold}.k{background:#D9E1F2;color:#1F4E78;font-size:11px;font-weight:bold;padding:2px 7px;border-radius:5px;margin-right:6px}.g{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.g img{width:230px;border-radius:6px;border:1px solid #ccc}.f{font-size:14px;color:#333;margin-top:6px}.f b{color:#000}</style>`;
+  h+=`<h1>Northwoods Baptist Church — Site Capture Report</h1><p><b>Site:</b> ${esc(meta.site||'')}<br><b>Technician:</b> ${esc(meta.tech||'')}<br><b>Date:</b> ${esc(meta.date||'')}</p>`;
+  ORDER.forEach(b=>{const items=LOCS.filter(l=>l.building===b);const any=items.some(l=>statusOf(l.id)!=='none');if(!any)return;
+    h+=`<h2>${b}</h2>`;
+    items.forEach(l=>{const f=fields[l.id]||{};const pics=ph[l.id]||[];if(statusOf(l.id)==='none')return;
+      h+=`<div class="loc"><div><span class="k">${l.kind}</span><span class="tag">${l.tag}</span> — ${esc(l.planned)} ${f.done?'✓':''}</div>`;
+      h+=`<div class="f"><b>Count:</b> ${esc(f.count||'—')} &nbsp; <b>Mount:</b> ${esc(f.mount||'—')} &nbsp; <b>Material:</b> ${esc(f.material||'—')} &nbsp; <b>Ht:</b> ${esc(f.height||'—')}</div>`;
+      if(f.notes)h+=`<div class="f"><b>Notes:</b> ${esc(f.notes)}</div>`;
+      if(pics.length)h+=`<div class="g">${pics.map(p=>`<img src="${p}">`).join('')}</div>`;
+      h+=`</div>`;});});
+  dl('Northwoods_site_report_'+stamp()+'.html',new Blob([h],{type:'text/html'}));
+};
+</script>
+</body>
+</html>
